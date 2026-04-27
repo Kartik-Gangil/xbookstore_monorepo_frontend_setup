@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (authToken) {
-            axios.defaults.headers.common['Authorization'] = `Token ${authToken}`;
+            API.defaults.headers.common['Authorization'] = `Token ${authToken}`;
             localStorage.setItem('authToken', authToken);
 
             API.get('/api/auth/user/')
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
                     setIsLoading(false);
                 });
         } else {
-            delete axios.defaults.headers.common['Authorization'];
+            delete API.defaults.headers.common['Authorization'];
             localStorage.removeItem('authToken');
             setUser(null);
             setIsLoading(false); // No token, so we're done loading
