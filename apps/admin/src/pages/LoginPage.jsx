@@ -30,6 +30,7 @@ const LoginPage = () => {
                 navigate('/admin/dashboard');
             })
             .catch(err => {
+                console.log(err)
                 const errorMessage = err.response?.data?.non_field_errors?.[0] || "Login failed. Check email and password.";
                 setError(errorMessage);
             });
@@ -81,10 +82,10 @@ const LoginPage = () => {
             <Box sx={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', pr: { xs: 2, md: 10 } }}>
                 <Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 420, background: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(12px)', borderRadius: 4, border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white' }}>
                     <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold' }}>Sign In</Typography>
-                    <Typography variant="body2" sx={{ mt: 1, color: 'rgba(255, 255, 255, 0.8)' }}>
+                    {/* <Typography variant="body2" sx={{ mt: 1, color: 'rgba(255, 255, 255, 0.8)' }}>
                         Don’t have an account?{' '}
                         <Link component={RouterLink} to="/signup" variant="subtitle2" sx={{ color: '#ff4d4d' }}>Get started</Link>
-                    </Typography>
+                    </Typography> */}
 
                     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
                         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
