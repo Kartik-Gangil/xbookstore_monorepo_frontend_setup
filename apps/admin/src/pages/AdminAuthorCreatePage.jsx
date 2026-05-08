@@ -4,6 +4,7 @@ import axios from 'axios';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { animate } from "motion";
+import { FormControl, InputLabel, Select, MenuItem, styled } from "@mui/material";
 
 // --- Material-UI Imports ---
 import {
@@ -53,7 +54,7 @@ const AdminAuthorCreatePage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const createButtonRef = useRef(null);
-    
+
     // --- ALL YOUR ORIGINAL HANDLER FUNCTIONS ---
     const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     const handleFileChange = (e) => {
@@ -108,7 +109,27 @@ const AdminAuthorCreatePage = () => {
             animate(ref.current, { scale }, { type: "spring", stiffness: 400, damping: 15 });
         }
     };
+    // --- THEMED COMPONENTS ---
+    const StyledSelect = styled(Select)({
+        borderRadius: 12,
 
+        "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#6b7280",
+        },
+
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#111827",
+        },
+
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#2563eb",
+            borderWidth: 2,
+        },
+
+        "& .MuiSelect-select": {
+            padding: "14px 16px",
+        },
+    });
     return (
         // YOUR ORIGINAL CONTAINER STRUCTURE THAT GUARANTEES IT WORKS WITH YOUR LAYOUT
         <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
@@ -119,7 +140,7 @@ const AdminAuthorCreatePage = () => {
                 borderRadius: '16px',
                 overflow: 'hidden',
                 // This makes the Paper theme-aware
-                bgcolor: 'background.paper' 
+                bgcolor: 'background.paper'
             }}>
                 {/* LEFT SIDE: Image Section */}
                 <Box sx={{
@@ -131,7 +152,7 @@ const AdminAuthorCreatePage = () => {
                 }} component="label">
 
                     <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: croppedImagePreview ? 'transparent' : 'rgba(0,0,0,0.5)', zIndex: 1, }} />
-                    
+
                     <Box sx={{ zIndex: 2, textAlign: 'center' }}>
                         <Button
                             component="label"
@@ -146,24 +167,55 @@ const AdminAuthorCreatePage = () => {
                 </Box>
 
                 {/* RIGHT SIDE: Form Section */}
-                <Box sx={{ p: { xs: 2, md: 3, }}} fullWidth >
+                <Box sx={{ p: { xs: 2, md: 3, } }} fullWidth >
                     <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>Create an Author</Typography>
-                    
+
                     <Grid container spacing={2} fullWidth>
                         {/* We now use our new, theme-aware StyledTextField */}
-                        <Grid item size={{ xs: 12, md: 6 }}><StyledTextField name="first_name" label="First Name" value={formData.first_name} onChange={handleChange} required fullWidth /></Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}><StyledTextField name="last_name" label="Last Name" value={formData.last_name} onChange={handleChange} required /></Grid>
+
+                        <Grid item size={{ xs: 12, md: 2 }}>
+                            <FormControl fullWidth required>
+                                <InputLabel id="title">Title</InputLabel>
+                                <StyledSelect label="title" labelId="title" name='title' value={formData.title} onChange={handleChange} required fullWidth >
+                                    <MenuItem value="Mr.">Mr.</MenuItem>
+                                    <MenuItem value="Ms.">Ms.</MenuItem>
+                                    <MenuItem value="Mrs.">Mrs.</MenuItem>
+                                    <MenuItem value="Miss">Miss</MenuItem>
+                                    <MenuItem value="Mx.">Mx.</MenuItem>
+                                    <MenuItem value="Dr.">Dr.</MenuItem>
+                                    <MenuItem value="Prof.">Prof.</MenuItem>
+                                    <MenuItem value="Sir">Sir</MenuItem>
+                                    <MenuItem value="Dame">Dame</MenuItem>
+                                    <MenuItem value="Rev.">Rev.</MenuItem>
+                                    <MenuItem value="Fr.">Fr.</MenuItem>
+                                    <MenuItem value="Hon.">Hon.</MenuItem>
+                                    <MenuItem value="Judge">Judge</MenuItem>
+                                    <MenuItem value="Justice">Justice</MenuItem>
+                                    <MenuItem value="Lord">Lord</MenuItem>
+                                    <MenuItem value="Lady">Lady</MenuItem>
+                                    <MenuItem value="Capt.">Capt.</MenuItem>
+                                    <MenuItem value="Major">Major</MenuItem>
+                                    <MenuItem value="Col.">Col.</MenuItem>
+                                    <MenuItem value="Gen.">Gen.</MenuItem>
+                                    <MenuItem value="Lt.">Lt.</MenuItem>
+                                </StyledSelect>
+                            </FormControl>
+                        </Grid>
+                        <Grid item size={{ xs: 12, md: 3.5 }}><StyledTextField name="first_name" label="First Name" value={formData.first_name} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item size={{ xs: 12, md: 3 }}><StyledTextField name="middle_name" label="Middle Name" value={formData.middle_name} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item size={{ xs: 12, md: 3.5 }}><StyledTextField name="last_name" label="Last Name" value={formData.last_name} onChange={handleChange} required /></Grid>
                         <Grid item size={{ xs: 12, md: 12 }} ><StyledTextField name="email" label="Email Address" type="email" value={formData.email} onChange={handleChange} fullWidth
-    /></Grid>
+                        /></Grid>
                     </Grid>
-                    
+
                     <Grid container spacing={2} sx={{ width: '100%', mt: 2 }} >
                         {/* We now use our new, theme-aware StyledTextField */}
-                        <Grid item size={{ xs: 12, md: 6 }} ><StyledTextField name="designation" label="Designation" value={formData.designation} onChange={handleChange} required fullWidth /></Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}><StyledTextField name="organization" label="Organization" value={formData.organization} onChange={handleChange} required xs={12} sm={12} fullWidth/></Grid>
-                        <Grid item size={{ xs: 12, md: 12 }}><StyledTextField name="bio" label="Biography" value={formData.bio} onChange={handleChange} multiline rows={8} fullWidth sx={{ width: '100%' }}/></Grid>
-    
-                        
+                        <Grid item size={{ xs: 12, md: 4 }} ><StyledTextField name="designation" label="Designation" value={formData.designation} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item size={{ xs: 12, md: 4 }} ><StyledTextField name="Department" label="Department" value={formData.department} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item size={{ xs: 12, md: 4 }}><StyledTextField name="organization" label="Organization" value={formData.organization} onChange={handleChange} required xs={12} sm={12} fullWidth /></Grid>
+                        <Grid item size={{ xs: 12, md: 12 }}><StyledTextField name="bio" label="Biography" value={formData.bio} onChange={handleChange} multiline rows={8} fullWidth sx={{ width: '100%' }} /></Grid>
+
+
                         {/* <Grid item xs={12}><StyledTextField name="bio" label="Biography" value={formData.bio} onChange={handleChange} multiline rows={3} /></Grid> */}
                     </Grid>
                     {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
@@ -209,7 +261,7 @@ const AdminAuthorCreatePage = () => {
                     <Button onClick={handleSaveCrop} variant="contained">Save Crop</Button>
                 </DialogActions>
             </Dialog>
-        </Container>
+        </Container >
     );
 };
 
