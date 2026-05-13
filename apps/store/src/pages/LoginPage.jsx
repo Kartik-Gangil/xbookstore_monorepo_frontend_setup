@@ -21,7 +21,7 @@ function LoginPage() {
 
     // This is the correct credentials object for your backend
     const credentials = {
-      username: email, // The user's email is their username
+      email: email, // The user's email is their username
       password: password,
     };
 

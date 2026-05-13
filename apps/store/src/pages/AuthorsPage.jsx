@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Container, Typography, Grid, Box, TextField, InputAdornment, Pagination } from '@mui/material'; // Import Pagination
+import { Container, Typography, Grid, Box, TextField, InputAdornment, Pagination, TablePagination } from '@mui/material'; // Import Pagination
 import SearchIcon from '@mui/icons-material/Search';
 import { motion } from 'framer-motion';
 import AuthorCard from '../components/author/AuthorCard';
@@ -11,14 +11,11 @@ import { ApiContext } from '../context/ApiProvider';
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const cardVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 
-const ITEMS_PER_PAGE = 6; // How many authors to show per page
+const ITEMS_PER_PAGE = 4; // How many authors to show per page
+
 
 function AuthorsPage() {
-  const { FetchAuthors, Authors } = useContext(ApiContext)
-
-  useEffect(() => {
-    FetchAuthors()
-  }, [])
+  const { FetchAuthors, Authors, AuthorsCount } = useContext(ApiContext)
 
   const designations = [...new Set(Authors.map(a => a.designation))];
   const roles = [...new Set(Authors.flatMap(a => a.role))];
@@ -30,6 +27,7 @@ function AuthorsPage() {
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [selectedGenders, setSelectedGenders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page number
+  const [totalAuthors, setTotalAuthors] = useState(0);
 
   // --- HANDLERS for the new filters ---
   const handleRoleChange = (event) => {
@@ -54,19 +52,28 @@ function AuthorsPage() {
       .filter(author => // Gender filter
         selectedGenders.length === 0 || selectedGenders.includes(author.gender)
       );
-  }, [Authors , searchTerm, selectedRoles, selectedGenders]);
+  }, [Authors, searchTerm, selectedRoles, selectedGenders]);
 
   // --- PAGINATION LOGIC ---
   const pageCount = Math.ceil(filteredAuthors.length / ITEMS_PER_PAGE);
-  const authorsOnPage = filteredAuthors.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const authorsOnPage = filteredAuthors.slice(
+    ((currentPage - 1) % 5) * ITEMS_PER_PAGE,
+    (((currentPage - 1) % 5) + 1) * ITEMS_PER_PAGE
+  );
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
+  useEffect(() => {
+    const apiPage = Math.ceil(currentPage / 5);
+
+    FetchAuthors(apiPage === 0 ? 1 : apiPage);
+  }, [currentPage]);
+
   // Reset to page 1 whenever filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [Authors , searchTerm, selectedRoles, selectedGenders]);
+  }, [searchTerm, selectedRoles, selectedGenders]);
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
@@ -86,12 +93,12 @@ function AuthorsPage() {
           <Box sx={{ mb: 2 }}>
             <TextField fullWidth variant="outlined" placeholder="Search by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>), }} />
           </Box>
-
+          <h3>Total Authors : {AuthorsCount}</h3>
           {/* We add a key to the motion.div to force a re-animation when the page changes */}
           <motion.div key={currentPage} variants={containerVariants} initial="hidden" animate="visible">
             <Grid container spacing={3}>
               {authorsOnPage.map((author) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={author.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={author.id}>
                   <motion.div variants={cardVariants}>
                     <AuthorCard author={author} />
                   </motion.div>
@@ -103,7 +110,7 @@ function AuthorsPage() {
           {/* --- NEW: PAGINATION COMPONENT --- */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <Pagination
-              count={pageCount}
+              count={Math.ceil(AuthorsCount / 5)}
               page={currentPage}
               onChange={handlePageChange}
               color="primary"

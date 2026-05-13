@@ -25,6 +25,7 @@ export function ApiProvider({ children }) {
     const [books, setBooks] = useState([]);
     const [bookData, setBookData] = useState()
     const [Authors, setAuthors] = useState([]);
+    const [AuthorsCount, setAuthorsCount] = useState(0);
     const [publication , setPublication] = useState([]);
 
 
@@ -124,9 +125,9 @@ export function ApiProvider({ children }) {
 
     // { id: 1, firstName: 'Elena', lastName: 'Rodriguez', designation: 'Novelist', role: ['Author'], gender: 'Female', country: 'Spain', imageUrl: 'https://placehold.co/150/FFC300/808080?text=E.R' }
 
-    const FetchAuthors = async () => {
+    const FetchAuthors = async (pageNumber = 1) => {
         try {
-            const response = await fetchAuthors();
+            const response = await fetchAuthors(pageNumber);
             const author = response?.data?.results?.map((a) => ({
                 id: a.id,
                 firstName: a.user.first_name,
@@ -138,7 +139,9 @@ export function ApiProvider({ children }) {
                 imageUrl: a.image
             }));
             setAuthors(author);
-            return response.data.results
+            setAuthorsCount(response?.data?.count || 0);
+            // console.log(response.data)
+            return response.data
         } catch (error) {
             console.error(error)
         }
@@ -170,6 +173,7 @@ export function ApiProvider({ children }) {
         fetchAllBooks,
         fetchBookbyID,
         Authors,
+        AuthorsCount,
         FetchAuthors,
         publication,
         fetchAllPublication

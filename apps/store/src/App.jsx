@@ -7,8 +7,8 @@ import { Box, GlobalStyles } from '@mui/material';
 
 // Import our components and images
 // import ParticleEffects from './components/ui/ParticleEffects';
-import lightBg from './assets/images/bg-light.png';
-import darkBg from './assets/images/bg-dark.png';
+// import lightBg from './images/bg-light.png';
+// import darkBg from './images/bg-dark.png';
 
 const customScrollbarStyles = (theme) => ({
   // This works in WebKit-based browsers (Chrome, Safari, Edge)
@@ -50,7 +50,7 @@ function App() {
           width: '100vw',
           height: '100vh',
           zIndex: -2, // Pushed furthest back
-          backgroundImage: `url(${isDarkMode ? darkBg : lightBg})`,
+          backgroundImage: `url(${isDarkMode ? '/images/bg-dark.png' : '/images/bg-light.png'})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           transition: 'background-image 0.8s ease-in-out',

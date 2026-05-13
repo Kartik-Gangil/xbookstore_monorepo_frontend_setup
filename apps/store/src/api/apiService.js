@@ -11,8 +11,8 @@ const fetchBookDetail = (id) => {
     return api.get(`/api/books/${id}`);
 }
 
-const fetchAuthors = () => {
-    return api.get('/api/authors');
+const fetchAuthors = (pageNumber) => {
+    return api.get(`/api/authors?page=${pageNumber}`);
 }
 
 const fetchPublications = () => {

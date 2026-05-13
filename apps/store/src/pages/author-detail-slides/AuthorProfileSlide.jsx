@@ -21,7 +21,7 @@ export function AuthorProfileSlide({ author }) {
     <Grid container spacing={4} alignItems="center">
       {/* Column 1: Author Image */}
       <Grid size={{ xs: 12, md: 4 }}>
-        <Box component="img" sx={{ width: '100%', maxWidth: '300px', height: 'auto', borderRadius: '50%', boxShadow: 6, display: 'block', mx: 'auto' }} src={author.imageUrl} alt={`${author.firstName} ${author.lastName}`} />
+        <Box component="img" sx={{ width: '100%', maxWidth: '300px', height: '100%', borderRadius: '50%', boxShadow: 6, display: 'block', mx: 'auto' }} src={author.imageUrl} alt={`${author.firstName} ${author.lastName}`} />
       </Grid>
 
       {/* Column 2: Author Details */}

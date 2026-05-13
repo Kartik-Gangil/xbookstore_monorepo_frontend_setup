@@ -1,104 +1,203 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Box, Typography } from '@mui/material';
+import { Container, Typography } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Import our new slide components and navigation
 import { AuthorProfileSlide } from './author-detail-slides/AuthorProfileSlide';
 import { AuthorBioSlide } from './author-detail-slides/AuthorBioSlide';
 import { AuthorWorksSlide } from './author-detail-slides/AuthorWorksSlide';
 import { AuthorHistorySlide } from './author-detail-slides/AuthorHistorySlide';
 import { AuthorCertsSlide } from './author-detail-slides/AuthorCertsSlide';
-import AuthorTabNavigation from '../components/ui/AuthorTabNavigation';
 
-// --- MOCK DATA ---
-const mockAuthors = [
-  { 
-     id: 1, 
-    authorId: 'AUTH2025ELRO001',
-    firstName: 'Elena', 
-    lastName: 'Rodriguez', 
-    designation: 'Lead Novelist', // This is the CURRENT designation
-    organization: 'Starlight Press', 
-    totalWorks: 12, 
-    recentAuthoredBook: { id: 1, title: 'The Silent Observer' },
-    recentEditedBook: { id: 8, title: 'The Gilded Cage' },
-    recentContributedBook: null,
-    imageUrl: 'https://placehold.co/250/FFC300/808080?text=E.R', 
-    // This is the new history array
-    history: [
-    { id: 101, designation: 'Lead Novelist', department: 'Fiction Division', organization: 'Starlight Press', startDate: '2020-01-15', endDate: null },
-    { id: 102, designation: 'Senior Writer', department: 'Sci-Fi Department', organization: 'Quantum Books', startDate: '2015-06-01', endDate: '2019-12-31' },
-    { id: 103, designation: 'Junior Editor', department: 'Editorial Board', organization: 'Heritage Publishing', startDate: '2012-08-20', endDate: '2015-05-30' },
-    { id: 104, designation: 'Junior Editor', department: 'Editorial Board', organization: 'Heritage Publishing', startDate: '2012-08-20', endDate: '2015-05-30' },
-    { id: 105, designation: 'Junior Editor', department: 'Editorial Board', organization: 'Heritage Publishing', startDate: '2012-08-20', endDate: '2015-05-30' },
-    { id: 106, designation: 'Junior Editor', department: 'Editorial Board', organization: 'Heritage Publishing', startDate: '2012-08-20', endDate: '2015-05-30' },
-    ],
-    bio: '...' 
-  },
-  { 
-    id: 2, 
-    authorId: 'AUTH2024MACO002',
-    firstName: 'Marcus', 
-    lastName: 'Cole', 
-    designation: 'Sci-Fi Architect', 
-    organization: 'Quantum Books University', 
-    totalWorks: 5, 
-    recentAuthoredBook: { id: 2, title: 'Echoes of Eternity' },
-    recentEditedBook: null, // Example for an author who hasn't edited
-    recentContributedBook: { id: 4, title: 'City of Shifting Sands' },
-    imageUrl: 'https://placehold.co/250/C70039/FFFFFF?text=M.C', 
-    bio: '...' 
-  },
-];
-const mockBooks = [
-  { id: 1, title: 'The Silent Observer', authorId: 1, imageUrl: 'https://placehold.co/300x400.png?text=By+E.R' },
-  { id: 4, title: 'City of Shifting Sands', authorId: 1, imageUrl: 'https://placehold.co/300x400.png?text=By+E.R' },
-  { id: 5, title: 'City of Shifting Sands', authorId: 1, imageUrl: 'https://placehold.co/300x400.png?text=By+E.R' },
-  { id: 6, title: 'City of Shifting Sands', authorId: 1, imageUrl: 'https://placehold.co/300x400.png?text=By+E.R' },
-  { id: 7, title: 'City of Shifting Sands', authorId: 1, imageUrl: 'https://placehold.co/300x400.png?text=By+E.R' },
-  { id: 8, title: 'City of Shifting Sands', authorId: 1, imageUrl: 'https://placehold.co/300x400.png?text=By+E.R' },
-  
-  { id: 2, title: 'Echoes of Eternity', authorId: 2, imageUrl: 'https://placehold.co/300x400.png?text=By+M.C' },
-  { id: 3, title: 'Whispers in the Void', authorId: 2, imageUrl: 'https://placehold.co/300x400.png?text=By+M.C' },
-];
-// --- END MOCK DATA ---
+import AuthorTabNavigation from '../components/ui/AuthorTabNavigation';
+import api from '../api/axiosConfig';
 
 const slideVariants = {
-  enter: (direction) => ({ x: direction > 0 ? '100vw' : '-100vw', opacity: 0 }),
-  center: { zIndex: 1, x: 0, opacity: 1 },
-  exit: (direction) => ({ zIndex: 0, x: direction < 0 ? '100vw' : '-100vw', opacity: 0 }),
+  enter: (direction) => ({
+    x: direction > 0 ? '100vw' : '-100vw',
+    opacity: 0,
+  }),
+
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+
+  exit: (direction) => ({
+    zIndex: 0,
+    x: direction < 0 ? '100vw' : '-100vw',
+    opacity: 0,
+  }),
 };
 
 function AuthorDetailPage() {
   const { authorId } = useParams();
-  const author = mockAuthors.find(a => a.id == authorId);
-  const authorBooks = mockBooks.filter(book => book.authorId == authorId);
-  
+
+  const [author, setAuthor] = useState(null);
+  const [authorBooks, setAuthorBooks] = useState([]);
+
   const [activeSlide, setActiveSlide] = useState(0);
   const [direction, setDirection] = useState(0);
+  const randomColor = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+  // Fetch author
+  useEffect(() => {
+    api
+      .get(`/api/authors/${authorId}`)
+      .then((response) => {
+        const data = response.data;
 
+        // ===== HISTORY =====
+        const history =
+          data?.history?.map((item) => ({
+            id: item?.id ?? 'N/A',
+
+            designation:
+              item?.designation ?? 'N/A',
+
+            organization:
+              item?.organization ?? 'N/A',
+
+            bio: item?.bio ?? 'N/A',
+
+            startDate:
+              item?.start_date ?? 'N/A',
+
+            endDate:
+              item?.end_date ?? 'Present',
+          })) || [];
+
+        // ===== AUTHOR MAPPING =====
+        const mappedAuthor = {
+          id: data?.id ?? 'N/A',
+
+          authorId:
+            data?.author_id ?? 'N/A',
+
+          firstName:
+            data?.user?.first_name ?? 'N/A',
+
+          lastName:
+            data?.user?.last_name ?? 'N/A',
+
+          fullName: `${data?.user?.first_name || ''} ${data?.user?.last_name || ''
+            }`,
+
+          email:
+            data?.user?.email ?? 'N/A',
+
+          username:
+            data?.user?.username ?? 'N/A',
+
+          role:
+            data?.user?.role ?? 'N/A',
+
+          designation:
+            history?.[0]?.designation ?? 'N/A',
+
+          organization:
+            history?.[0]?.organization ?? 'N/A',
+
+          bio:
+            history?.[0]?.bio ?? 'N/A',
+
+          imageUrl:
+            data?.image ??
+            `https://placehold.co/250/${randomColor}/808080?text=${data?.user?.first_name[0]}${data?.user?.last_name[0]}`,
+
+          socialMedia:
+            data?.social_media_profile ?? 'N/A',
+
+          orcid:
+            data?.orcid ?? 'N/A',
+
+          totalWorks: 0,
+
+          recentAuthoredBook: null,
+          recentEditedBook: null,
+          recentContributedBook: null,
+
+          history,
+        };
+
+        setAuthor(mappedAuthor);
+
+        // ===== BOOKS =====
+        // If your API later returns books
+        // then map them here
+
+        setAuthorBooks(
+          data?.books?.map((book) => ({
+            id: book?.id ?? 'N/A',
+
+            title: book?.title ?? 'N/A',
+
+            imageUrl:
+              book?.image ??
+              'https://placehold.co/300x400?text=Book',
+          })) || []
+        );
+      })
+      .catch((error) => {
+        console.error(
+          'Error fetching author details:',
+          error
+        );
+      });
+  }, [authorId]);
+
+  // Loading
   if (!author) {
-    return <Typography variant="h4" align="center">Author not found!</Typography>;
+    return (
+      <Typography variant="h4" align="center">
+        Loading...
+      </Typography>
+    );
   }
 
   const slides = [
-    <AuthorProfileSlide key="profile" author={author} />,
-    <AuthorBioSlide key="bio" author={author} />,
-    <AuthorWorksSlide key="works" author={author} books={authorBooks} />,
-    <AuthorHistorySlide key="history" author={author} />,
-    <AuthorCertsSlide key="certs" author={author} />,
+    <AuthorProfileSlide
+      key="profile"
+      author={author}
+    />,
+
+    <AuthorBioSlide
+      key="bio"
+      author={author}
+    />,
+
+    <AuthorWorksSlide
+      key="works"
+      author={author}
+      books={authorBooks}
+    />,
+
+    <AuthorHistorySlide
+      key="history"
+      author={author}
+    />,
+
+    <AuthorCertsSlide
+      key="certs"
+      author={author}
+    />,
   ];
 
   const setSlide = (newSlide) => {
-    const newDirection = newSlide > activeSlide ? 1 : -1;
+    const newDirection =
+      newSlide > activeSlide ? 1 : -1;
+
     setDirection(newDirection);
     setActiveSlide(newSlide);
   };
 
   return (
     <>
-      <AuthorTabNavigation activeSlide={activeSlide} setActiveSlide={setSlide} />
+      <AuthorTabNavigation
+        activeSlide={activeSlide}
+        setActiveSlide={setSlide}
+      />
+
       <Container
         maxWidth={false}
         disableGutters
@@ -111,7 +210,10 @@ function AuthorDetailPage() {
           overflow: 'hidden',
         }}
       >
-        <AnimatePresence initial={false} custom={direction}>
+        <AnimatePresence
+          initial={false}
+          custom={direction}
+        >
           <motion.div
             key={activeSlide}
             custom={direction}
@@ -119,7 +221,17 @@ function AuthorDetailPage() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
+            transition={{
+              x: {
+                type: 'spring',
+                stiffness: 300,
+                damping: 30,
+              },
+
+              opacity: {
+                duration: 0.2,
+              },
+            }}
             style={{
               position: 'absolute',
               width: '100%',
