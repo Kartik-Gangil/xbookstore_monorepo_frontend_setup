@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "store":"pnpm dev --filter store",
+    "admin":"pnpm dev --filter admin"
   },
   "keywords": [],
   "author": "",

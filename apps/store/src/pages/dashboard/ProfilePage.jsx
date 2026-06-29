@@ -2,9 +2,30 @@ import React from 'react';
 import { Typography, Box, Grid, TextField, Button, Card, CardContent, Avatar } from '@mui/material';
 import { useAuth } from '../../context/useAuth';
 import PhoneInput from 'react-phone-input-2'; // Import the new phone input
+import { useState, useEffect } from 'react';
 
-function ProfilePage() {
+function ProfilePage() 
+{
   const { user } = useAuth();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [country, setCountry] = useState('');
+  const [stateRegion, setStateRegion] = useState('');
+  const [city, setCity] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  const [about, setAbout] = useState('A passionate individual focused on exploring new opportunities, building meaningful connections.');
+
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || user.first_name || '');
+      setLastName(user.lastName || user.last_name || '');
+      setPhone(user.phone || user.phone_number || '');
+    }
+  }, [user]);
+
 
   const handleProfileUpdate = (event) => {
     event.preventDefault();
@@ -48,7 +69,7 @@ function ProfilePage() {
               <Box component="form" onSubmit={handleProfileUpdate}>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="Name" fullWidth defaultValue={`${user?.firstName || 'Jaydon'} ${user?.lastName || 'Frankie'}`} />
+                    <TextField label="Name" fullWidth value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField label="Email Address" type="email" fullWidth defaultValue={user?.email || 'demo@minimals.cc'} disabled />
@@ -61,22 +82,22 @@ function ProfilePage() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="Address" fullWidth defaultValue="90210 Broadway Blvd" />
+                    <TextField label="Address" fullWidth value={address} onChange={(e)=>setAddress(e.target.value)}/>
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="Country" fullWidth defaultValue="Canada" />
+                    <TextField label="Country" fullWidth  value={country} onChange={(e)=>setCountry(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="State/Region" fullWidth defaultValue="California" />
+                    <TextField label="State/Region" fullWidth value={stateRegion} onChange={(e)=>setStateRegion(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="City" fullWidth defaultValue="San Francisco" />
+                    <TextField label="City" fullWidth value={city} onChange={(e)=>setCity(e.target.value)}/>
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="Zip/Code" fullWidth defaultValue="94116" />
+                    <TextField label="Zip/Code" fullWidth value={zipCode} onChange={(e)=>setZipCode(e.target.value)} />
                   </Grid>
                   <Grid size={12}>
-                    <TextField label="About" multiline rows={3} fullWidth defaultValue="Praesent turpis. Phasellus viverra nulla ut metus varius laoreet. Phasellus tempus." />
+                    <TextField label="About" multiline rows={3} fullWidth value={about} onChange={(e)=>setAbout(e.target.value)}/>
                   </Grid>
                 </Grid>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>

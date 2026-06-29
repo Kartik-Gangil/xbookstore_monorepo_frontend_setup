@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/axiosConfig';
 import { Container, Typography, Box, Grid, Button, Paper, Divider, TextField, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import AddressFormModal from '../components/checkout/AddressFormModal'; // Import our new modal
@@ -13,8 +15,24 @@ const mockAddresses = [
 // --- END MOCK DATA ---
 
 function CheckoutPage() {
-  const { cartItems, clearCart } = useCart();
+  const cartContext = useCart();
+  const { fetchOrder } = useAuth();
   const navigate = useNavigate();
+  
+  if (!cartContext) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h6" color="error">Shopping cart not found. Please refresh the page.</Typography>
+          <Button variant="contained" sx={{ mt: 2 }} onClick={() => window.location.reload()}>
+            Refresh
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
+  const { cartItems = [], clearCart } = cartContext;
   
   // --- NEW STATE for all our interactive elements ---
   const [selectedAddressId, setSelectedAddressId] = useState(mockAddresses[0].id);
@@ -24,7 +42,7 @@ function CheckoutPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // --- PRICE CALCULATION ---
-  const subtotal = useMemo(() => cartItems.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0), [cartItems]);
+  const subtotal = useMemo(() => (Array.isArray(cartItems) ? cartItems : []).reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0), [cartItems]);
   const shipping = subtotal > 1000 ? 0 : 50;
   const total = subtotal + shipping - discount;
 
@@ -38,11 +56,55 @@ function CheckoutPage() {
     }
   };
 
-  const handlePlaceOrder = () => {
-    alert('Order placed successfully! (No payment processing in Phase 1)');
+ const handlePlaceOrder = async () => {
+  if (cartItems.length === 0) {
+    alert('Your cart is empty. Add items before placing an order.');
+    return;
+  }
+
+  //const selectedAddress = addresses.find((addr) => addr.id === selectedAddressId);
+  
+  try {
+    // Step 1: Create a shopping cart instance on backend
+    const cartPayload = {
+      items: cartItems.map((item) => ({
+        product: item.id,
+        quantity: item.quantity,
+      })),
+    };
+    
+    const cartResponse = await api.post('/api/carts/', cartPayload);
+    const cartId = cartResponse.data.id;
+    
+    // Step 2: Create order pinned to that cart
+    const orderPayload = {
+      cart: cartId,
+      //shipTo: selectedAddress ? `${selectedAddress.name}, ${selectedAddress.address}` : '',
+      shipping,
+      discount,
+      total,
+      paymentMethod,
+    };
+    
+    // Post the order to your Django backend
+    await api.post('/api/orders/', orderPayload);
+    
+    // CRITICAL FIX: Explicitly await the context refetch so the state updates 
+    // BEFORE navigating away to the confirmation/history screens
+    await fetchOrder();
+    
+    // Clear the cart state locally
     clearCart();
+    
+    // Redirect
     navigate('/order-confirmation');
-  };
+  } catch (error) {
+    const serverMessage = error.response?.data?.detail || error.response?.data?.error || error.response?.data || error.message;
+    console.error('Failed to place order.', error.response?.data || error.message);
+    alert(`Unable to place your order: ${typeof serverMessage === 'string' ? serverMessage : JSON.stringify(serverMessage)}`);
+  }
+};
+
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>

@@ -1,40 +1,12 @@
 import React from 'react';
-import { Typography, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Link as MuiLink } from '@mui/material';
+import { Box,Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Link as MuiLink, useTheme, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
-
-// Mock data for past orders
-const mockOrders = [
-  { 
-    id: 'OD11235813', 
-    date: '2023-10-26', 
-    total: 450.50, 
-    status: 'Delivered',
-    items: [{ title: 'The Silent Observer', qty: 1 }],
-    tracking: { provider: 'Delhivery', id: 'DEL123456789' } 
-  },
-  { 
-    id: 'OD21348921', 
-    date: '2023-09-15', 
-    total: 1299.00, 
-    status: 'Shipped',
-    items: [{ title: 'Echoes of Eternity', qty: 1 }, { title: 'City of Shifting Sands', qty: 1 }],
-    tracking: { provider: 'Delhivery', id: 'DEL987654321' } 
-  },
-  { 
-    id: 'OD34551442', 
-    date: '2023-08-01', 
-    total: 799.75, 
-    status: 'Processing',
-    items: [{ title: 'The Gilded Cage', qty: 1 }],
-    tracking: null 
-  },
-];
-
-
+import { useAuth } from '../../context/useAuth';
+import FrostedGlassPanel from '../../components/ui/FrostedGlassPanel'; 
 
 // Helper to get a color for the status chip
 const getStatusChipColor = (status) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
         case 'delivered': return 'success';
         case 'shipped': return 'info';
         case 'processing': return 'warning';
@@ -43,46 +15,69 @@ const getStatusChipColor = (status) => {
     }
 };
 
-
-
-
 function OrderHistoryPage() {
-  const handleTrackOrder = (trackingId) => {
-    // In a real app, this would open the Delhivery tracking page
-    window.open(`https://www.delhivery.com/track/package/${trackingId}`, '_blank');
-  };
+   const { user, order } = useAuth();
+   const theme = useTheme();
+   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+   const orders = Array.isArray(order) ? order : order?.results || [];
 
-  return (
-    <>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>Your Orders</Typography>
-      <TableContainer component={Paper} sx={{ backgroundColor: 'transparent' }}>
-        <Table>
-          <TableHead>
-            {/* ... */}
-          </TableHead>
-          <TableBody>
-            {mockOrders.map((order) => (
-              <TableRow key={order.id}>
-                {/* --- THIS IS THE FIX --- */}
-                <TableCell sx={{ fontWeight: 'medium' }}>
-                  <MuiLink component={Link} to={`/dashboard/orders/${order.id}`}>
-                    {order.id}
-                  </MuiLink>
-                </TableCell>
-                {/* --- END OF FIX --- */}
-                <TableCell>{order.date}</TableCell>
-                <TableCell><Chip label={order.status} color={getStatusChipColor(order.status)} size="small" /></TableCell>
-                <TableCell>₹{order.total.toFixed(2)}</TableCell>
-                <TableCell align="right">
-                  {/* We will move the main buttons to the detail page */}
-                  <Button component={Link} to={`/dashboard/orders/${order.id}`} size="small">View Details</Button>
-                </TableCell>
+   return (
+    <Box sx={{ p: isMobile ? 1 : 3 }}>
+      <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
+        Your Orders
+      </Typography>
+      
+      {/* Wrapped the table inside your Frosted Glass Panel */}
+      <FrostedGlassPanel sx={{ p: 2 }}>
+        <TableContainer component={Paper} sx={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>Order ID</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Total</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </>
+            </TableHead>
+            <TableBody>
+              {orders && orders.length > 0 ? (
+                orders.map((item) => (
+                  <TableRow key={item.id} hover>
+                    <TableCell sx={{ fontWeight: 'medium' }}>
+                      <MuiLink component={Link} to={`/dashboard/orders/${item.id}`} underline="hover">
+                        {item.id}
+                      </MuiLink>
+                    </TableCell>
+                    <TableCell>{item.date}</TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={item.status} 
+                        color={getStatusChipColor(item.status)} 
+                        size="small" 
+                      />
+                    </TableCell>
+                    <TableCell>₹{item.total ? item.total.toFixed(2) : '0.00'}</TableCell>
+                    <TableCell align="right">
+                      <Button component={Link} to={`/dashboard/orders/${item.id}`} size="small" variant="outlined" >
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                    <Typography color="textSecondary">No orders found.</Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </FrostedGlassPanel>
+    </Box>
   );
 }
+
 export default OrderHistoryPage;

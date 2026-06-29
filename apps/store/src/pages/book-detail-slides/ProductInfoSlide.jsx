@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Box, Typography, Button, Divider, Rating, ToggleButtonGroup, ToggleButton, Chip, Paper } from '@mui/material';
 import { useCart } from '../../context/CartContext';
 import BookImageGallery from '../../components/book/BookImageGallery';
+import { clearcoatRoughness } from 'three/src/nodes/core/PropertyNode.js';
 
 export function ProductInfoSlide({ 
   book, 
@@ -19,7 +20,7 @@ export function ProductInfoSlide({
   isAffiliateLink
 }) {
   const { addItemToCart } = useCart();
-
+console.log(book)
   const handleAddToCart = () => {
     if (!selectedFormat) return;
 
@@ -52,7 +53,7 @@ export function ProductInfoSlide({
   return (
     <Grid container spacing={4} alignItems="center">
       <Grid size={{ xs: 12, md: 5 }}>
-        <BookImageGallery images={book.images} formatDetails={selectedFormat} />
+        {/* <BookImageGallery images={book.images} formatDetails={selectedFormat} /> */}
       </Grid>
       <Grid size={{ xs: 12, md: 7 }}>
         <Paper elevation={6} sx={{ p: { xs: 2, md: 4 }, backgroundColor: 'background.paper' }}>

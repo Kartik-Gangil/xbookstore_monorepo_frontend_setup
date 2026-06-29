@@ -4,7 +4,8 @@ import { Box, List, ListItem, ListItemButton, ListItemText, Typography, Paper, u
 import { useAuth } from '../../context/useAuth';
 import FrostedGlassPanel from '../../components/ui/FrostedGlassPanel'; // <-- IMPORT OUR PANEL
 
-function DashboardLayout() {
+function DashboardLayout() 
+{
   const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -12,8 +13,8 @@ function DashboardLayout() {
   const activeLinkStyle = {
     backgroundColor: theme.palette.action.selected,
     borderRight: `3px solid ${theme.palette.primary.main}`,
-    fontWeight: 'bold',
   };
+
 
   return (
     <Box sx={{

@@ -20,6 +20,13 @@ export default function BookDetailPage() {
     fetchBookbyID(bookId);
   }, [bookId]);
 
+  const book = bookData || mockBookData;
+  // This check prevents any crashes. The component will not render until the data is ready.
+  console.log(bookData)
+  if (!book) {
+    return <Typography>Loading...</Typography>;
+  }
+  // --- ALL STATE AND LOGIC LIVES IN THE PARENT COMPONENT ---
   const book = bookData;
   const formats = book?.formats || [];
   
