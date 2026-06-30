@@ -7,18 +7,10 @@ import { Container, Typography, Box, Grid, Button, Paper, Divider, TextField, Ra
 import AddIcon from '@mui/icons-material/Add';
 import AddressFormModal from '../components/checkout/AddressFormModal'; // Import our new modal
 
-// --- MOCK DATA for saved addresses ---
-const mockAddresses = [
-  { id: 1, name: 'Home', address: '123 Pixel Lane, Appville, WB 700001', phone: '9876543210' },
-  { id: 2, name: 'Work', address: '456 Component Drive, Codeburg, WB 700002', phone: '9876543211' },
-];
-// --- END MOCK DATA ---
 
 function CheckoutPage() {
   const cartContext = useCart();
-  const { fetchOrder } = useAuth();
   const navigate = useNavigate();
-  
   if (!cartContext) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -31,11 +23,12 @@ function CheckoutPage() {
       </Container>
     );
   }
+  const { fetchOrder, address } = useAuth();
 
-  const { cartItems = [], clearCart } = cartContext;
-  
+  const { cartItems = [], clearCart, fetchCartItem } = cartContext;
+
   // --- NEW STATE for all our interactive elements ---
-  const [selectedAddressId, setSelectedAddressId] = useState(mockAddresses[0].id);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
@@ -45,7 +38,7 @@ function CheckoutPage() {
   const subtotal = useMemo(() => (Array.isArray(cartItems) ? cartItems : []).reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0), [cartItems]);
   const shipping = subtotal > 1000 ? 0 : 50;
   const total = subtotal + shipping - discount;
-
+  // console.log(selectedAddressId)
   const handleApplyCoupon = () => {
     // Mock coupon logic
     if (couponCode.toUpperCase() === 'XOFFENCER10') {
@@ -56,54 +49,45 @@ function CheckoutPage() {
     }
   };
 
- const handlePlaceOrder = async () => {
-  if (cartItems.length === 0) {
-    alert('Your cart is empty. Add items before placing an order.');
-    return;
-  }
+  const handlePlaceOrder = async () => {
+    if (cartItems.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
 
-  //const selectedAddress = addresses.find((addr) => addr.id === selectedAddressId);
-  
-  try {
-    // Step 1: Create a shopping cart instance on backend
-    const cartPayload = {
-      items: cartItems.map((item) => ({
-        product: item.id,
-        quantity: item.quantity,
-      })),
-    };
-    
-    const cartResponse = await api.post('/api/carts/', cartPayload);
-    const cartId = cartResponse.data.id;
-    
-    // Step 2: Create order pinned to that cart
-    const orderPayload = {
-      cart: cartId,
-      //shipTo: selectedAddress ? `${selectedAddress.name}, ${selectedAddress.address}` : '',
-      shipping,
-      discount,
-      total,
-      paymentMethod,
-    };
-    
-    // Post the order to your Django backend
-    await api.post('/api/orders/', orderPayload);
-    
-    // CRITICAL FIX: Explicitly await the context refetch so the state updates 
-    // BEFORE navigating away to the confirmation/history screens
-    await fetchOrder();
-    
-    // Clear the cart state locally
-    clearCart();
-    
-    // Redirect
-    navigate('/order-confirmation');
-  } catch (error) {
-    const serverMessage = error.response?.data?.detail || error.response?.data?.error || error.response?.data || error.message;
-    console.error('Failed to place order.', error.response?.data || error.message);
-    alert(`Unable to place your order: ${typeof serverMessage === 'string' ? serverMessage : JSON.stringify(serverMessage)}`);
-  }
-};
+    try {
+      const response = await api.post("/api/orders/", {
+        shipping_address: selectedAddressId
+          ? `${selectedAddressId.full_name}, ${selectedAddressId.address_line_1}, ${selectedAddressId.city}, ${selectedAddressId.state}, ${selectedAddressId.postal_code}`
+          : "Address not provided",
+        payment_mode: paymentMethod
+      });
+
+      console.log("Order Created:", response.data);
+
+      // Refresh orders
+      await fetchOrder();
+
+      // Refresh cart (backend already emptied it)
+      await fetchCartItem();
+
+      navigate("/order-confirmation");
+    } catch (error) {
+      const serverMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        error.response?.data ||
+        error.message;
+
+      console.error(error);
+
+      alert(
+        typeof serverMessage === "string"
+          ? serverMessage
+          : JSON.stringify(serverMessage)
+      );
+    }
+  };
 
 
   return (
@@ -117,11 +101,11 @@ function CheckoutPage() {
           {/* Step 1: Shipping Address */}
           <Paper sx={{ p: 3, mb: 3, backgroundColor: 'background.paper' }}>
             <Typography variant="h6" gutterBottom>1. Select Shipping Address</Typography>
-            {mockAddresses.map(addr => (
+            {address?.map(addr => (
               <Paper
                 key={addr.id}
                 variant="outlined"
-                onClick={() => setSelectedAddressId(addr.id)}
+                onClick={() => setSelectedAddressId(addr)}
                 sx={{
                   p: 2,
                   mb: 1,
@@ -130,9 +114,9 @@ function CheckoutPage() {
                   borderWidth: selectedAddressId === addr.id ? 2 : 1,
                 }}
               >
-                <Typography sx={{ fontWeight: 'bold' }}>{addr.name}</Typography>
-                <Typography variant="body2">{addr.address}</Typography>
-                <Typography variant="body2">{addr.phone}</Typography>
+                <Typography sx={{ fontWeight: 'bold' }}>{addr.full_name}</Typography>
+                <Typography variant="body2">{addr.address_line_1}</Typography>
+                <Typography variant="body2">{addr.city}, {addr.state}, {addr.country}, {addr.postal_code}</Typography>
               </Paper>
             ))}
             <Button startIcon={<AddIcon />} sx={{ mt: 1 }} onClick={() => setIsModalOpen(true)}>
@@ -156,12 +140,12 @@ function CheckoutPage() {
             <Typography variant="h6" gutterBottom>Order Summary</Typography>
             {/* Item List */}
             <Box sx={{ my: 2, maxHeight: '200px', overflowY: 'auto' }}>
-                {cartItems.map(item => (
-                    <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">{item.title} x {item.quantity}</Typography>
-                        <Typography variant="body2">₹{parseFloat(item.price * item.quantity).toFixed(2)}</Typography>
-                    </Box>
-                ))}
+              {cartItems.map(item => (
+                <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2">{item.title} x {item.quantity}</Typography>
+                  <Typography variant="body2">₹{parseFloat(item.price * item.quantity).toFixed(2)}</Typography>
+                </Box>
+              ))}
             </Box>
             <Divider />
             {/* Coupon Code */}
@@ -182,7 +166,7 @@ function CheckoutPage() {
           </Paper>
         </Grid>
       </Grid>
-      
+
       <AddressFormModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </Container>
   );

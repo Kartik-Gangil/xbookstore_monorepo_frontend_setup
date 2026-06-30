@@ -52,12 +52,12 @@ export function ApiProvider({ children }) {
                 category: 'Mystry',
                 // author: book.participants[0].author.user.username,
                 author: "no one",
-                rating: 4.5,
+                rating: book.rating,
                 reviews: 120,
                 // price: book.formats[0].mrp ,
                 price: 1000,
-                publisher: book.publication.name,
-                description: book.description,
+                publisher: book.publication,
+                // description: book.description,
                 imageUrl: book.cover_image,
             }));
             setBooks(books);

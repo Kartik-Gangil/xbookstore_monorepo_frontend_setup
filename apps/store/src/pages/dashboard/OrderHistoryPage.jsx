@@ -1,32 +1,32 @@
 import React from 'react';
-import { Box,Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Link as MuiLink, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Link as MuiLink, useTheme, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
-import FrostedGlassPanel from '../../components/ui/FrostedGlassPanel'; 
+import FrostedGlassPanel from '../../components/ui/FrostedGlassPanel';
 
 // Helper to get a color for the status chip
 const getStatusChipColor = (status) => {
-    switch (status?.toLowerCase()) {
-        case 'delivered': return 'success';
-        case 'shipped': return 'info';
-        case 'processing': return 'warning';
-        case 'cancelled': return 'error';
-        default: return 'default';
-    }
+  switch (status?.toLowerCase()) {
+    case 'delivered': return 'success';
+    case 'shipped': return 'info';
+    case 'processing': return 'warning';
+    case 'cancelled': return 'error';
+    default: return 'default';
+  }
 };
 
 function OrderHistoryPage() {
-   const { user, order } = useAuth();
-   const theme = useTheme();
-   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-   const orders = Array.isArray(order) ? order : order?.results || [];
-
-   return (
+  const { user, order } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const orders = Array.isArray(order) ? order : order?.results || [];
+  // console.log({order})
+  return (
     <Box sx={{ p: isMobile ? 1 : 3 }}>
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
         Your Orders
       </Typography>
-      
+
       {/* Wrapped the table inside your Frosted Glass Panel */}
       <FrostedGlassPanel sx={{ p: 2 }}>
         <TableContainer component={Paper} sx={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
@@ -49,15 +49,15 @@ function OrderHistoryPage() {
                         {item.id}
                       </MuiLink>
                     </TableCell>
-                    <TableCell>{item.date}</TableCell>
+                    <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Chip 
-                        label={item.status} 
-                        color={getStatusChipColor(item.status)} 
-                        size="small" 
+                      <Chip
+                        label={item.status}
+                        color={getStatusChipColor(item.status)}
+                        size="small"
                       />
                     </TableCell>
-                    <TableCell>₹{item.total ? item.total.toFixed(2) : '0.00'}</TableCell>
+                    <TableCell>₹{item.total_amount ? item.total_amount : '0.00'}</TableCell>
                     <TableCell align="right">
                       <Button component={Link} to={`/dashboard/orders/${item.id}`} size="small" variant="outlined" >
                         View Details

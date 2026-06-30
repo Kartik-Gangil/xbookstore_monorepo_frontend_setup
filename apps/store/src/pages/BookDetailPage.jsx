@@ -20,14 +20,12 @@ export default function BookDetailPage() {
     fetchBookbyID(bookId);
   }, [bookId]);
 
-  const book = bookData || mockBookData;
+  // const book = bookData || mockBookData;
   // This check prevents any crashes. The component will not render until the data is ready.
-  console.log(bookData)
-  if (!book) {
-    return <Typography>Loading...</Typography>;
-  }
-  // --- ALL STATE AND LOGIC LIVES IN THE PARENT COMPONENT ---
+  // console.log(bookData)
   const book = bookData;
+ 
+  // --- ALL STATE AND LOGIC LIVES IN THE PARENT COMPONENT ---
   const formats = book?.formats || [];
   
   const slideVariants = { enter: (direction) => ({ x: direction > 0 ? '100vw' : '-100vw', opacity: 0 }), center: { zIndex: 1, x: 0, opacity: 1 }, exit: (direction) => ({ zIndex: 0, x: direction < 0 ? '100vw' : '-100vw', opacity: 0 }), };

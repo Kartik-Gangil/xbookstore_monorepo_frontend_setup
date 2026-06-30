@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { Container, Typography, Box, Grid, Paper, CardMedia, IconButton, Button, Divider } from '@mui/material';
 import { Add, Remove, Delete } from '@mui/icons-material';
@@ -6,7 +6,11 @@ import { Link } from 'react-router-dom';
 import FrostedGlassPanel from '../components/ui/FrostedGlassPanel'; // Import our panel
 
 function CartPage() {
-  const { cartItems, updateItemQuantity, removeItemFromCart } = useCart();
+  const { cartItems, increaseQuantity, removeItemFromCart, fetchCartItem, decreaseQuantity } = useCart();
+
+  useEffect(() => {
+    fetchCartItem()
+  }, [cartItems])
 
   // The subtotal calculation now correctly reads the price from the item
   const subtotal = cartItems.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0);
@@ -57,11 +61,11 @@ function CartPage() {
                 {/* --- END OF NEW INFO --- */}
 
                 <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto', pt: 1 }}>
-                  <IconButton onClick={() => updateItemQuantity(item.id, item.quantity - 1)} size="small"><Remove /></IconButton>
+                  <IconButton onClick={() => decreaseQuantity(item.cartId)} size="small"><Remove /></IconButton>
                   <Typography sx={{ mx: 2 }}>{item.quantity}</Typography>
-                  <IconButton onClick={() => updateItemQuantity(item.id, item.quantity + 1)} size="small"><Add /></IconButton>
+                  <IconButton onClick={() => increaseQuantity(item.cartId)} size="small"><Add /></IconButton>
                   <Typography variant="h6" sx={{ ml: 'auto', fontWeight: 'medium' }}>₹{parseFloat(item.price).toFixed(2)}</Typography>
-                  <IconButton sx={{ ml: 2 }} onClick={() => removeItemFromCart(item.id)}><Delete /></IconButton>
+                  <IconButton sx={{ ml: 2 }} onClick={() => removeItemFromCart(item.cartId)}><Delete /></IconButton>
                 </Box>
               </Box>
             </Paper>
@@ -72,19 +76,19 @@ function CartPage() {
         <Grid size={{ xs: 12, md: 4 }}>
           <FrostedGlassPanel>
             <Typography variant="h6" gutterBottom>Order Summary</Typography>
-            <Divider sx={{ my: 1 }}/>
+            <Divider sx={{ my: 1 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 1 }}>
-                <Typography>Subtotal</Typography>
-                <Typography>₹{subtotal.toFixed(2)}</Typography>
+              <Typography>Subtotal</Typography>
+              <Typography>₹{subtotal.toFixed(2)}</Typography>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 1 }}>
-                <Typography>Shipping</Typography>
-                <Typography>Free</Typography>
+              <Typography>Shipping</Typography>
+              <Typography>Free</Typography>
             </Box>
-            <Divider sx={{ my: 1 }}/>
+            <Divider sx={{ my: 1 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 1 }}>
-                <Typography variant="h6">Total</Typography>
-                <Typography variant="h6">₹{subtotal.toFixed(2)}</Typography>
+              <Typography variant="h6">Total</Typography>
+              <Typography variant="h6">₹{subtotal.toFixed(2)}</Typography>
             </Box>
             <Button component={Link} to="/checkout" variant="contained" fullWidth sx={{ mt: 2 }} disabled={cartItems.length === 0}>
               Proceed to Checkout

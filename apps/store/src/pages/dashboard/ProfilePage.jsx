@@ -4,10 +4,8 @@ import { useAuth } from '../../context/useAuth';
 import PhoneInput from 'react-phone-input-2'; // Import the new phone input
 import { useState, useEffect } from 'react';
 
-function ProfilePage() 
-{
+function ProfilePage() {
   const { user } = useAuth();
-
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -37,13 +35,13 @@ function ProfilePage()
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
         Account Settings
       </Typography>
-      
+
       <Grid container spacing={4}>
         {/* Column 1: Profile Picture and Actions */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Card sx={{ p: 2, backgroundColor: 'transparent', border: 1, borderColor: 'divider' }}>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <Avatar 
+              <Avatar
                 src="https://placehold.co/128/94B3CA/162735?text=JD" // Placeholder avatar
                 sx={{ width: 128, height: 128, mb: 2 }}
               />
@@ -64,7 +62,7 @@ function ProfilePage()
 
         {/* Column 2: Main Profile Form */}
         <Grid size={{ xs: 12, md: 8 }}>
-           <Card sx={{ p: 2, backgroundColor: 'transparent', border: 1, borderColor: 'divider' }}>
+          <Card sx={{ p: 2, backgroundColor: 'transparent', border: 1, borderColor: 'divider' }}>
             <CardContent>
               <Box component="form" onSubmit={handleProfileUpdate}>
                 <Grid container spacing={2}>
@@ -72,32 +70,36 @@ function ProfilePage()
                     <TextField label="Name" fullWidth value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField label="Name" fullWidth value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TextField label="Email Address" type="email" fullWidth defaultValue={user?.email || 'demo@minimals.cc'} disabled />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     {/* The phone input component */}
                     <PhoneInput
-                      country={'us'} // Default country
+                      country={'in'} // Default country
                       inputStyle={{ width: '100%' }}
+                      value={phone}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="Address" fullWidth value={address} onChange={(e)=>setAddress(e.target.value)}/>
+                    <TextField label="Address" fullWidth value={address} onChange={(e) => setAddress(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="Country" fullWidth  value={country} onChange={(e)=>setCountry(e.target.value)} />
+                    <TextField label="Country" fullWidth value={country} onChange={(e) => setCountry(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="State/Region" fullWidth value={stateRegion} onChange={(e)=>setStateRegion(e.target.value)} />
+                    <TextField label="State/Region" fullWidth value={stateRegion} onChange={(e) => setStateRegion(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="City" fullWidth value={city} onChange={(e)=>setCity(e.target.value)}/>
+                    <TextField label="City" fullWidth value={city} onChange={(e) => setCity(e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label="Zip/Code" fullWidth value={zipCode} onChange={(e)=>setZipCode(e.target.value)} />
+                    <TextField label="Zip/Code" fullWidth value={zipCode} onChange={(e) => setZipCode(e.target.value)} />
                   </Grid>
                   <Grid size={12}>
-                    <TextField label="About" multiline rows={3} fullWidth value={about} onChange={(e)=>setAbout(e.target.value)}/>
+                    <TextField label="About" multiline rows={3} fullWidth value={about} onChange={(e) => setAbout(e.target.value)} />
                   </Grid>
                 </Grid>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>

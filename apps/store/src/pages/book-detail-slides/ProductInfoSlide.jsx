@@ -20,7 +20,7 @@ export function ProductInfoSlide({
   isAffiliateLink
 }) {
   const { addItemToCart } = useCart();
-console.log(book)
+// console.log(book)
   const handleAddToCart = () => {
     if (!selectedFormat) return;
 
